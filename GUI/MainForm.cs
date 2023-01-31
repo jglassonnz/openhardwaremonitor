@@ -64,6 +64,7 @@ namespace OpenHardwareMonitor.GUI {
     private WmiProvider wmiProvider;
 
     private UserOption runWebServer;
+    private UserOption runWebServerAtStart;
     private HttpServer server;
 
     private UserOption logSensors;
@@ -291,6 +292,21 @@ namespace OpenHardwareMonitor.GUI {
           server.StartHTTPListener();
         else
           server.StopHTTPListener();
+      };
+
+      runWebServerAtStart = new UserOption("runWebServerAtStartMenuItem", false,
+        runWebServerAtStartMenuItem, settings);
+      runWebServerAtStart.Changed += delegate (object sender, EventArgs e) {
+        if (runWebServerAtStart.Value) {
+          this.server.StartHTTPListener();
+          this.runWebServerMenuItem.Checked = true;
+          this.settings.SetValue("runWebServerMenuItem", true);
+        }
+        else {
+          this.server.StopHTTPListener();
+          this.runWebServerMenuItem.Checked = false;
+          this.settings.SetValue("runWebServerMenuItem", false);
+        }
       };
 
       logSensors = new UserOption("logSensorsMenuItem", false, logSensorsMenuItem,
@@ -650,6 +666,11 @@ namespace OpenHardwareMonitor.GUI {
       }
 
       this.Bounds = newBounds;
+
+      if (this.settings.GetValue("runWebServerAtStartMenuItem", false) == true) {
+        this.server.StartHTTPListener();
+        this.settings.SetValue("runWebServerMenuItem", true);
+      }
     }
     
     private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
@@ -929,6 +950,5 @@ namespace OpenHardwareMonitor.GUI {
     public HttpServer Server {
       get { return server; }
     }
-
   }
 }
